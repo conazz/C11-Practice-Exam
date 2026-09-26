@@ -131,7 +131,15 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
 .promoHead p{margin:0}
 .appIcon{width:52px;height:52px;border-radius:14px;flex:none;box-shadow:var(--shadow);object-fit:cover}
 .disclaimer{color:var(--muted2);font-size:.78rem;line-height:1.55;text-align:center;margin:28px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
+.storageWarn{background:var(--port-bg);border:1px solid var(--port);color:var(--ink);border-radius:16px;padding:14px 16px;margin-bottom:16px;font-size:.85rem;line-height:1.5}
+.qtyRow{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.qtyBtn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:12px;padding:10px 16px;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .15s}
+.qtyBtn.on{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border-color:transparent;box-shadow:0 6px 16px var(--glow)}
+.qtyCustom{display:flex;align-items:center;gap:10px;margin:10px 0 4px}
+.qtyInput{width:90px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:.95rem;font-family:'JetBrains Mono',monospace}
+.qtyNote{color:var(--muted2);font-size:.8rem;margin:2px 0 0}
 </style>
+<script data-goatcounter="https://c11quiz.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <main>
@@ -154,7 +162,7 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
     </div>
     <div class="panel mode">
       <h3>Exam mode</h3>
-      <p>No answers shown until you submit. Change any answer before submitting. <b id="examTime"></b> total time (1 min per question). Auto-submits when time runs out.</p>
+      <p>No answers shown until you submit. Change any answer before submitting. Choose how many questions you want (1 min per question). Auto-submits when time runs out.</p>
       <button class="btn" id="goExam">Start exam</button>
     </div>
     <div class="panel mode">
@@ -180,6 +188,28 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
         Visit marinongtamad.com
       </a>
+    </div>
+  </section>
+
+  <section id="examSetup" class="hidden">
+    <div class="panel">
+      <h3>Exam mode setup</h3>
+      <p class="sub" style="margin:0 0 4px">How many questions do you want in this exam?</p>
+      <div class="qtyRow" id="qtyRow">
+        <button class="qtyBtn" data-qty="10" type="button">10</button>
+        <button class="qtyBtn" data-qty="20" type="button">20</button>
+        <button class="qtyBtn on" data-qty="30" type="button">30</button>
+        <button class="qtyBtn" data-qty="50" type="button">50</button>
+        <button class="qtyBtn" data-qty="all" type="button">All (<span id="qtyAllTotal"></span>)</button>
+      </div>
+      <div class="qtyCustom">
+        <label for="examQty" style="font-weight:700;font-size:.9rem">Custom:</label>
+        <input class="qtyInput" id="examQty" type="number" min="1" step="1" value="30">
+        <span style="color:var(--muted2);font-size:.85rem">questions</span>
+      </div>
+      <p class="qtyNote">1 minute per question. Questions are picked at random from your reviewer.</p>
+      <button class="btn" id="examSetupGo" style="margin-top:14px">Start exam</button>
+      <button class="btn ghost" id="examSetupHome" style="margin-top:8px">Back to menu</button>
     </div>
   </section>
 
@@ -1163,7 +1193,7 @@ let mode, lastMode="practice", deck=[], i=0, picks=[], timeLeft=0, tick=null;
 let between=false, pool=[], track=null, round=1, rows=[], tabs=[], filter="all", missedSet=[];
 
 function shuffle(a){a=a.slice();for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]];}return a;}
-function show(id){["home","quiz","result","scan","favorites"].forEach(x=>$(x).classList.toggle("hidden",x!==id));window.scrollTo({top:0});if(id==="home")updateFavCount();}
+function show(id){["home","examSetup","quiz","result","scan","favorites"].forEach(x=>$(x).classList.toggle("hidden",x!==id));window.scrollTo({top:0});if(id==="home")updateFavCount();}
 function fmt(t){const m=Math.floor(t/60),s=t%60;return m+":"+String(s).padStart(2,"0");}
 function build(list){return shuffle(list).map(item=>{const o=shuffle([0,1,2,3]);return {src:item,q:item.q,w:item.w,o:o.map(x=>item.o[x]),a:o.indexOf(item.a)};});}
 
@@ -1188,6 +1218,23 @@ function setTheme(t){
 ["themeToggle","themeToggle2","themeToggle3"].forEach(id=>{ const b=$(id); if(b) b.onclick=()=>setTheme(currentTheme()==="dark"?"light":"dark"); });
 
 /* ---------- Favorites ---------- */
+function storageWorks(){
+  try{
+    const k="__c11_probe__"; localStorage.setItem(k,"1");
+    const ok=localStorage.getItem(k)==="1";
+    localStorage.removeItem(k);
+    return ok;
+  }catch(e){ return false; }
+}
+const STORAGE_OK=storageWorks();
+function showStorageWarning(){
+  if(STORAGE_OK) return;
+  const home=$("home");
+  if(!home||home.querySelector(".storageWarn")) return;
+  const d=document.createElement("div"); d.className="storageWarn";
+  d.textContent="This browser is blocking saved data on this page, so favorites and your theme choice won't be remembered after you close or refresh. This is a browser/app setting, not a bug in the quiz — try opening this page in Chrome, Safari or Edge directly (not inside the Facebook app's built-in browser), and make sure cookies/site data aren't blocked for this site.";
+  home.insertBefore(d,home.firstChild);
+}
 let favorites=new Set();
 (function loadFavorites(){
   try{ const raw=JSON.parse(localStorage.getItem("c11_favorites")||"[]"); favorites=new Set(raw); }catch(e){ favorites=new Set(); }
@@ -1480,10 +1527,39 @@ $("quiz").addEventListener("touchend",e=>{
 document.addEventListener("keydown",e=>{ if(e.key==="ArrowRight") go(1); if(e.key==="ArrowLeft") go(-1); });
 
 $("total").textContent=BANK.length;
-$("examTime").textContent=BANK.length+" minutes";
+updateFavCount();
+showStorageWarning();
 $("goPractice").onclick=()=>start("practice",BANK);
 $("goIntensive").onclick=()=>start("intensive",BANK);
-$("goExam").onclick=()=>start("exam",BANK);
+
+let lastExamList=BANK;
+let examQty=30;
+$("qtyAllTotal").textContent=BANK.length;
+if($("examQty")) $("examQty").value=examQty;
+function setQtyPreset(val){
+  examQty=val;
+  document.querySelectorAll("#qtyRow .qtyBtn").forEach(b=>b.classList.toggle("on",b.dataset.qty===String(val)));
+  $("examQty").value=(val==="all")?BANK.length:val;
+}
+document.querySelectorAll("#qtyRow .qtyBtn").forEach(b=>{
+  b.onclick=()=>setQtyPreset(b.dataset.qty==="all"?"all":Number(b.dataset.qty));
+});
+$("examQty").oninput=()=>{
+  document.querySelectorAll("#qtyRow .qtyBtn").forEach(b=>b.classList.remove("on"));
+  const n=Number($("examQty").value);
+  if(n===BANK.length){ setQtyPreset("all"); return; }
+  const match=document.querySelector(`#qtyRow .qtyBtn[data-qty="${n}"]`);
+  if(match) match.classList.add("on");
+};
+$("goExam").onclick=()=>show("examSetup");
+$("examSetupHome").onclick=()=>show("home");
+$("examSetupGo").onclick=()=>{
+  let n=Math.round(Number($("examQty").value));
+  if(!n || n<1) n=1;
+  if(n>BANK.length) n=BANK.length;
+  lastExamList=(n>=BANK.length)?BANK:shuffle(BANK).slice(0,n);
+  start("exam",lastExamList);
+};
 $("prev").onclick=()=>{if(i>0){i--;render();}};
 $("next").onclick=()=>{if(i<deck.length-1){i++;render();}};
 $("submit").onclick=()=>{
@@ -1491,10 +1567,9 @@ $("submit").onclick=()=>{
   ask(blank?`You still have ${blank} unanswered question(s). Submit anyway?`:"Submit your exam? You can't change answers after this.","Submit",()=>finish(false));
 };
 $("quit").onclick=()=>ask("Quit to menu? Your progress in this session will be lost.","Quit",()=>{clearInterval(tick);show("home");});
-$("again").onclick=()=>start(lastMode,BANK);
+$("again").onclick=()=>start(lastMode,lastMode==="exam"?lastExamList:BANK);
 $("retryMissed").onclick=()=>start("practice",missedSet.slice());
 $("home2").onclick=()=>show("home");
 </script>
-  <script data-goatcounter="https://c11quiz.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
