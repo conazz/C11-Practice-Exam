@@ -60,7 +60,8 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
 .favBtn.on{color:#FFB020;border-color:#FFB020}
 .favBtn.on svg{fill:#FFB020}
 .opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:transparent;color:var(--ink);
-  border:2px solid var(--line);border-radius:14px;padding:13px 15px;margin:0 0 10px;font:inherit;cursor:pointer}
+  border:2px solid var(--line);border-radius:14px;padding:13px 15px;margin:0 0 10px;font:inherit;cursor:pointer;
+  position:relative;overflow:hidden}
 .opt:hover:not(:disabled){border-color:var(--accent)}
 .opt:focus-visible,.btn:focus-visible,.nav button:focus-visible,.tab:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .opt .k{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;min-width:1.2em;color:var(--accent2)}
@@ -97,11 +98,23 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
 .item .yours{color:var(--port);font-weight:600}
 .item .ans{color:var(--stbd);font-weight:600}
 .item .w{color:var(--muted);font-size:.95rem}
+.reviewOpts{margin:6px 0 10px}
+.reviewOpts .opt{padding:10px 13px;margin-bottom:7px;font-size:.92rem;cursor:default}
 .hidden{display:none}
 #card.slideL{animation:inL .22s ease-out}#card.slideR{animation:inR .22s ease-out}
 @keyframes inL{from{transform:translateX(40px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes inR{from{transform:translateX(-40px);opacity:.3}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion: reduce){#card.slideL,#card.slideR{animation:none}}
+.opt.flash::after{
+  content:"";position:absolute;top:50%;left:50%;width:900px;height:900px;margin:-450px 0 0 -450px;
+  border-radius:50%;border:8px solid var(--accent2);
+  box-shadow:0 0 14px 3px var(--glow),inset 0 0 14px 3px var(--glow);
+  background:transparent;
+  transform:scale(0);opacity:1;
+  animation:optFlashRing .4s cubic-bezier(.2,.7,.3,1) forwards;
+  pointer-events:none;z-index:2;
+}
+@keyframes optFlashRing{0%{transform:scale(0);opacity:1;border-width:10px}55%{transform:scale(.62);opacity:1;border-width:4px}100%{transform:scale(1.1);opacity:0;border-width:1px}}
+@media (prefers-reduced-motion: reduce){#card.slideL,#card.slideR{animation:none}.opt.flash::after{animation:none;opacity:0}}
 #quiz{touch-action:pan-y}
 .item.mid{border-left-color:var(--warn)}
 .modal{position:fixed;inset:0;background:rgba(13,11,18,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
@@ -1191,6 +1204,8 @@ const $ = id => document.getElementById(id);
 const L = "ABCD";
 let mode, lastMode="practice", deck=[], i=0, picks=[], timeLeft=0, tick=null;
 let between=false, pool=[], track=null, round=1, rows=[], tabs=[], filter="all", missedSet=[];
+let picking=false;
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function shuffle(a){a=a.slice();for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]];}return a;}
 function show(id){["home","examSetup","quiz","result","scan","favorites"].forEach(x=>$(x).classList.toggle("hidden",x!==id));window.scrollTo({top:0});if(id==="home")updateFavCount();}
@@ -1400,7 +1415,21 @@ function render(){
   }
 }
 
-function examPick(idx){ picks[i]=idx; if(i<deck.length-1) i++; render(); }
+function flashOption(btn){
+  if(!btn) return;
+  btn.classList.remove("flash"); void btn.offsetWidth; btn.classList.add("flash");
+}
+function examPick(idx){
+  if(picking) return; picking=true;
+  const opts=[...$("card").querySelectorAll(".opt")]; const btn=opts[idx];
+  opts.forEach(o=>o.disabled=true);
+  if(btn) btn.classList.add("picked");
+  flashOption(btn);
+  setTimeout(()=>{
+    picking=false;
+    picks[i]=idx; if(i<deck.length-1) i++; render();
+  }, reduceMotion?0:420);
+}
 function drawGrid(){
   const g=$("grid"); g.innerHTML="";
   deck.forEach((_,n)=>{
@@ -1413,11 +1442,19 @@ function drawGrid(){
 }
 
 function learnPick(idx){
-  picks[i]=idx; const q=deck[i];
-  if(mode==="intensive"){ const t=track.get(q.src); if(idx===q.a) t.solvedOn=t.wrong+1; else t.wrong++; q.mistakeNo=idx===q.a?0:t.wrong; }
-  render();
-  const nx=$("card").querySelector(".navrow .btn:last-child");
-  if(nx){ nx.focus({preventScroll:true}); nx.scrollIntoView({block:"nearest",behavior:"smooth"}); }
+  if(picking) return; picking=true;
+  const opts=[...$("card").querySelectorAll(".opt")]; const btn=opts[idx];
+  opts.forEach(o=>o.disabled=true);
+  if(btn) btn.classList.add("picked");
+  flashOption(btn);
+  setTimeout(()=>{
+    picking=false;
+    picks[i]=idx; const q=deck[i];
+    if(mode==="intensive"){ const t=track.get(q.src); if(idx===q.a) t.solvedOn=t.wrong+1; else t.wrong++; q.mistakeNo=idx===q.a?0:t.wrong; }
+    render();
+    const nx=$("card").querySelector(".navrow .btn:last-child");
+    if(nx){ nx.focus({preventScroll:true}); nx.scrollIntoView({block:"nearest",behavior:"smooth"}); }
+  }, reduceMotion?0:420);
 }
 
 function feedback(){
@@ -1466,7 +1503,7 @@ function finish(timeUp){
     $("verdict").textContent=`${Math.round(c[0]/n*100)}% right on the first try. Focus on the 2nd-try, 3rd-try${miss?" and missed":""} questions below.`;
     const cat={1:["t1","Right on 1st try",""],2:["t2","Right on 2nd try","mid"],3:["t3","Right on 3rd try","mid"],0:["miss","Missed 3 times","bad"]};
     const order=["miss","t3","t2","t1"];
-    rows=pool.map(s=>{const [id,lab,cls]=cat[track.get(s).solvedOn];return {cat:id,cls,label:lab,q:s.q,yours:null,ans:s.o[s.a],w:s.w};})
+    rows=pool.map(s=>{const [id,lab,cls]=cat[track.get(s).solvedOn];return {cat:id,cls,label:lab,q:s.q,o:s.o,a:s.a,picked:null,w:s.w};})
       .sort((a,b)=>order.indexOf(a.cat)-order.indexOf(b.cat));
     rows.forEach((r,k)=>r.n=k+1);
     tabs=[["all","All"],["t1","1st try"],["t2","2nd try"],["t3","3rd try"],["miss","Missed"]];
@@ -1477,8 +1514,8 @@ function finish(timeUp){
     $("final").textContent=`${right}/${n}`; $("scoreNote").textContent="";
     $("stats").innerHTML=`<span class="g">✓ ${right} correct</span><span class="r">✗ ${wrong} wrong</span>`+(blank?`<span class="m">– ${blank} unanswered</span>`:"");
     $("verdict").textContent= pct>=70?`${pct}% — passing level (70%). Review the wrong ones below.`:`${pct}% — below 70%. Study the wrong ones below and try again.`;
-    rows=deck.map((q,k)=>{const ok=picks[k]===q.a;return {cat:ok?"right":"wrong",cls:ok?"":"bad",label:ok?"✓ Correct":"✗ Wrong",q:q.q,
-      yours:ok?null:(picks[k]===null?"No answer":`${L[picks[k]]}. ${q.o[picks[k]]}`),ans:`${L[q.a]}. ${q.o[q.a]}`,w:q.w,n:k+1};});
+    rows=deck.map((q,k)=>{const ok=picks[k]===q.a;return {cat:ok?"right":"wrong",cls:ok?"":"bad",label:ok?"✓ Correct":(picks[k]===null?"✗ No answer":"✗ Wrong"),q:q.q,
+      o:q.o,a:q.a,picked:picks[k],w:q.w,n:k+1};});
     tabs=[["all","All"],["wrong","Wrong"],["right","Correct"]];
     missedSet=deck.filter((q,k)=>picks[k]!==q.a).map(q=>q.src);
   }
@@ -1500,8 +1537,15 @@ function drawReview(){
     const d=document.createElement("div"); d.className="item"+(r.cls?" "+r.cls:"");
     const add=(cls,txt)=>{const p=document.createElement("p"); if(cls)p.className=cls; p.textContent=txt; d.appendChild(p);};
     add("n",`${r.n} · ${r.label}`); add("",r.q);
-    if(r.yours) add("yours","Your answer: "+r.yours);
-    add("ans",(r.yours||mode==="intensive"?"Correct answer: ":"Your answer: ")+r.ans); add("w",r.w);
+    const optList=document.createElement("div"); optList.className="reviewOpts";
+    r.o.forEach((t,idx)=>{
+      const b=document.createElement("button"); b.type="button"; b.disabled=true; b.className="opt";
+      if(idx===r.a) b.classList.add("right"); else if(idx===r.picked) b.classList.add("wrong"); else b.classList.add("dim");
+      b.innerHTML=`<span class="k">${L[idx]}</span><span></span>`; b.lastChild.textContent=t;
+      optList.appendChild(b);
+    });
+    d.appendChild(optList);
+    add("w",r.w);
     box.appendChild(d);
   });
   if(!box.children.length){const p=document.createElement("p");p.className="legend";p.textContent="Nothing here.";box.appendChild(p);}
