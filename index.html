@@ -6,7 +6,7 @@
 <title>C11 Practice Exam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F3EFFC; --bg2:#EAE1FA; --panel:#FFFFFF; --panel2:#F7F2FD; --ink:#1C1130; --muted:#6E6480; --muted2:#9C93AD;
@@ -134,24 +134,29 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
 .scanOpt .k{font-weight:700;min-width:1.2em}
 .scanOpt.right .k{color:var(--stbd)}
 .emptyState{text-align:center;color:var(--muted);padding:30px 10px}
-.ad{position:relative;border-radius:24px;padding:3px;margin:0 0 18px;background:linear-gradient(120deg,#8C40FF,#FF4FA3,#FFB020,#22C3FF,#8C40FF);background-size:300% 300%;animation:adFlow 5s linear infinite;box-shadow:0 14px 38px var(--glow)}
-.ad .in{background:var(--panel);border-radius:21px;padding:22px 18px;text-align:center}
-.adBadge{display:inline-block;background:linear-gradient(135deg,#FF4FA3,#FF8A3D);color:#fff;font-weight:800;font-size:.74rem;letter-spacing:.08em;padding:6px 14px;border-radius:999px;margin-bottom:12px;animation:adPulse 1.6s ease-in-out infinite}
-.adTitle{font-weight:800;font-size:1.55rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px}
-.adText{margin:0 0 16px;color:var(--ink);font-size:.97rem;line-height:1.55}
-.adBtn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--fb);color:var(--fb-ink);border-radius:999px;padding:14px 22px;font-weight:800;text-decoration:none;font-size:1rem;box-shadow:0 10px 24px rgba(24,119,242,.45);animation:adBounce 2.4s ease-in-out infinite}
-.adBtn svg{width:22px;height:22px;fill:currentColor;flex:none}
-.adBtn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:adShine 3s ease-in-out infinite}
+@property --ang{syntax:"<angle>";initial-value:0deg;inherits:false}
+.ad{position:relative;border-radius:12px;padding:2px;margin:0 0 18px;background:conic-gradient(from var(--ang),#f2b84b,#00D4FF 25%,#f2b84b 50%,rgba(242,184,75,.2) 75%,#f2b84b);animation:adSpin 6s linear infinite;box-shadow:0 12px 34px rgba(0,212,255,.25)}
+.ad .in{background:radial-gradient(120% 70% at 50% 0%,#17405a,#0A1B24 72%);border-radius:10px;padding:22px 18px;text-align:center;color:#E3EEF2}
+.adLogo{width:46px;height:58px;margin:0 auto 8px;display:block}
+.adBadge{display:inline-flex;align-items:center;gap:7px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.08em;border:1.5px solid #f2b84b;color:#f2b84b;border-radius:6px;padding:2px 10px;margin-bottom:10px}
+.adBadge::before{content:"";width:8px;height:8px;border-radius:50%;background:#5CC98D;box-shadow:0 0 8px 2px rgba(92,201,141,.7);animation:adDot 1.6s ease-in-out infinite}
+.adTitle{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:2rem;line-height:1.05;letter-spacing:.01em;margin:0 0 4px;color:#fff;text-transform:uppercase}
+.adSub{font-family:"Barlow Condensed",sans-serif;font-size:1rem;letter-spacing:.08em;text-transform:uppercase;color:#8FA9B5;margin:0 0 12px}
+.adText{margin:0 0 16px;color:#cfdde4;font-size:.98rem;line-height:1.55}
+.adText strong{color:#f2b84b}
+.adBtn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;background:#f2b84b;color:#092030;border-radius:10px;min-height:54px;padding:12px 22px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:1.3rem;letter-spacing:.04em;text-decoration:none;box-shadow:0 0 0 2px rgba(242,184,75,.35),0 10px 24px rgba(242,184,75,.35);animation:adBounce 2.4s ease-in-out infinite}
+.adBtn svg{width:24px;height:24px;fill:currentColor;flex:none}
+.adBtn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:adShine 3s ease-in-out infinite}
 .ad.sm{margin:14px 0}
-.ad.sm .in{display:flex;flex-direction:column;gap:10px;padding:14px;text-align:left}
-.ad.sm .adTitle{font-size:1.05rem;margin:0}
-.ad.sm .adText{font-size:.85rem;margin:0}
-.ad.sm .adBtn{padding:11px 16px;font-size:.9rem;animation:none}
-@keyframes adFlow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-@keyframes adPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.ad.sm .in{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:14px;text-align:left}
+.ad.sm .adTitle{font-size:1.35rem;margin:0}
+.ad.sm .adText{font-size:.88rem;margin:0}
+.ad.sm .adBtn{align-self:stretch;min-height:46px;padding:9px 16px;font-size:1.1rem;animation:none}
+@keyframes adSpin{to{--ang:360deg}}
+@keyframes adDot{0%,100%{opacity:.3}50%{opacity:1}}
 @keyframes adBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes adShine{0%,55%{left:-60%}100%{left:130%}}
-@media (prefers-reduced-motion: reduce){.ad,.adBadge,.adBtn,.adBtn::after{animation:none}}
+@media (prefers-reduced-motion: reduce){.ad,.adBadge::before,.adBtn,.adBtn::after{animation:none}}
 .disclaimer{color:var(--muted2);font-size:.78rem;line-height:1.55;text-align:center;margin:28px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
 .storageWarn{background:var(--port-bg);border:1px solid var(--port);color:var(--ink);border-radius:16px;padding:14px 16px;margin-bottom:16px;font-size:.85rem;line-height:1.5}
 .qtyRow{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
@@ -173,9 +178,11 @@ h3{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.25rem;
     <p class="sub"><span id="total"></span> questions from your reviewer. Questions and choices are shuffled every time.</p>
     <div class="ad hero">
       <div class="in">
-        <span class="adBadge">★ COMPLETE VERSION NA!</span>
-        <h2 class="adTitle">Gusto mo ng mas kumpleto, kabaro?</h2>
-        <p class="adText">Meron nang <strong>complete competence reviewer</strong> — gawa ng kapwa mo seafarer na <strong>nag-one take sa exam gamit ang reviewer na ito</strong>.</p>
+        <svg class="adLogo" viewBox="0 0 46 58" aria-hidden="true"><path d="M23 2 43 12v26c0 9-9 15-20 18C12 53 3 47 3 38V12Z" fill="#0f3347" stroke="#4FB3E0" stroke-width="2.5"/><circle cx="23" cy="7" r="3.2" fill="#f2b84b"/><g fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><circle cx="23" cy="15" r="3"/><path d="M23 18v17M17 22h12M14 29c0 5 4 8 9 8s9-3 9-8"/></g><g fill="#f2b84b"><rect x="12" y="40" width="22" height="2.6"/><rect x="12" y="45" width="22" height="2.6"/></g></svg>
+        <span class="adBadge">COMPLETE VERSION NA</span>
+        <h2 class="adTitle">Deck Management Review</h2>
+        <p class="adSub">Complete competence reviewer</p>
+        <p class="adText">Gusto mo ng mas kumpleto, kabaro? Gawa ito ng <strong>kapwa mo seafarer</strong> na <strong>nag-one take sa exam gamit ang reviewer na ito</strong>.</p>
         <a class="adBtn" href="https://www.facebook.com/share/1KRb427bME/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.51 17.52 2 12 2S2 6.51 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg>
           Message us on Facebook
@@ -1608,7 +1615,7 @@ $("home2").onclick=()=>show("home");
 
 /* ---------- Complete-version ad (compact copies) ---------- */
 document.querySelectorAll("[data-ad]").forEach(el=>{
-  el.innerHTML=`<div class="in"><h3 class="adTitle">★ Complete version na!</h3><p class="adText">Gawa ng kapwa seafarer na nag-one take sa exam gamit ang reviewer na ito. Complete competence — message us to avail.</p><a class="adBtn" href="https://www.facebook.com/share/1KRb427bME/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.51 17.52 2 12 2S2 6.51 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg>Message us on Facebook</a></div>`;
+  el.innerHTML=`<div class="in"><span class="adBadge">COMPLETE VERSION NA</span><h3 class="adTitle">Deck Management Review</h3><p class="adText">Complete competence reviewer, gawa ng kapwa seafarer na <strong>nag-one take sa exam gamit ang reviewer na ito</strong>.</p><a class="adBtn" href="https://www.facebook.com/share/1KRb427bME/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.51 17.52 2 12 2S2 6.51 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg>Message us on Facebook</a></div>`;
 });
 </script>
 </body>
